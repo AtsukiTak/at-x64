@@ -55,6 +55,71 @@ pub enum Reg64 {
     R15,
 }
 
+impl Reg64 {
+    pub fn rex_r(&self) -> bool {
+        use Reg64::*;
+
+        match self {
+            RAX | RCX | RDX | RBX | RSP | RBP | RSI | RDI => false,
+            R8 | R9 | R10 | R11 | R12 | R13 | R14 | R15 => true,
+        }
+    }
+
+    pub fn rex_b(&self) -> bool {
+        use Reg64::*;
+
+        match self {
+            RAX | RCX | RDX | RBX | RSP | RBP | RSI | RDI => false,
+            R8 | R9 | R10 | R11 | R12 | R13 | R14 | R15 => true,
+        }
+    }
+
+    pub fn mode(&self) -> u8 {
+        use Reg64::*;
+
+        match self {
+            RAX | R8 => 0b000,
+            RCX | R9 => 0b001,
+            RDX | R10 => 0b010,
+            RBX | R11 => 0b011,
+            RSP | R12 => 0b100,
+            RBP | R13 => 0b101,
+            RSI | R14 => 0b110,
+            RDI | R15 => 0b111,
+        }
+    }
+
+    pub fn reg(&self) -> u8 {
+        use Reg64::*;
+
+        match self {
+            RAX | R8 => 0b000,
+            RCX | R9 => 0b001,
+            RDX | R10 => 0b010,
+            RBX | R11 => 0b011,
+            RSP | R12 => 0b100,
+            RBP | R13 => 0b101,
+            RSI | R14 => 0b110,
+            RDI | R15 => 0b111,
+        }
+    }
+
+    pub fn rm(&self) -> u8 {
+        use Reg64::*;
+
+        match self {
+            RAX | R8 => 0b000,
+            RCX | R9 => 0b001,
+            RDX | R10 => 0b010,
+            RBX | R11 => 0b011,
+            RSP | R12 => 0b100,
+            RBP | R13 => 0b101,
+            RSI | R14 => 0b110,
+            RDI | R15 => 0b111,
+        }
+    }
+}
+
 impl Display for Reg64 {
     fn fmt(&self, f: &mut Formatter) -> Result<(), FmtError> {
         match self {
@@ -253,24 +318,4 @@ impl Display for Reg8 {
             Reg8::R15B => write!(f, "r15b"),
         }
     }
-}
-
-pub enum RegMem8 {
-    Reg(Reg8),
-    Mem(u8),
-}
-
-pub enum RegMem16 {
-    Reg(Reg16),
-    Mem(u16),
-}
-
-pub enum RegMem32 {
-    Reg(Reg32),
-    Mem(u32),
-}
-
-pub enum RegMem64 {
-    Reg(Reg64),
-    Mem(u64),
 }

@@ -73,8 +73,8 @@ impl Default for ByteCode {
 pub struct Rex(u8);
 
 impl Rex {
-    pub fn new(w: bool, r: bool, x: bool, b: bool) -> Self {
-        Rex(0b0100_0000 | (w as u8) << 3 | (r as u8) << 2 | (x as u8) << 1 | (b as u8))
+    pub fn new() -> Self {
+        Rex(0b0100_0000)
     }
 
     pub fn from_raw(raw: u8) -> Self {
@@ -90,28 +90,56 @@ impl Rex {
         (self.0 & 0b0000_1000) != 0
     }
 
+    pub fn set_w(&mut self, flag: bool) {
+        if flag {
+            self.0 |= 0b0000_1000;
+        } else {
+            self.0 &= 0b1111_0111;
+        }
+    }
+
     pub fn r(&self) -> bool {
         (self.0 & 0b0000_0100) != 0
+    }
+
+    pub fn set_r(&mut self, flag: bool) {
+        if flag {
+            self.0 |= 0b0000_0100;
+        } else {
+            self.0 &= 0b1111_1011;
+        }
     }
 
     pub fn x(&self) -> bool {
         (self.0 & 0b0000_0010) != 0
     }
 
+    pub fn set_x(&mut self, flag: bool) {
+        if flag {
+            self.0 |= 0b0000_0010;
+        } else {
+            self.0 &= 0b1111_1101;
+        }
+    }
+
     pub fn b(&self) -> bool {
         (self.0 & 0b0000_0001) != 0
+    }
+
+    pub fn set_b(&mut self, flag: bool) {
+        if flag {
+            self.0 |= 0b0000_0001;
+        } else {
+            self.0 &= 0b1111_1110;
+        }
     }
 }
 
 pub struct ModRM(u8);
 
 impl ModRM {
-    pub fn new(mode: u8, reg: u8, r_m: u8) -> ModRM {
-        assert!(mode <= 0b11);
-        assert!(reg <= 0b111);
-        assert!(r_m <= 0b111);
-
-        ModRM(mode << 6 | reg << 3 | r_m)
+    pub fn new() -> ModRM {
+        ModRM(0)
     }
 
     pub fn from_raw(raw: u8) -> Self {
@@ -126,12 +154,30 @@ impl ModRM {
         self.0 >> 6
     }
 
-    pub fn reg(&self) -> u8 {
-        (self.0 & 0b00111000) >> 3
+    /// mode is 2 bits.
+    pub fn set_mode(&mut self, mode: u8) {
+        assert!(mode <= 0b11);
+        self.0 &= (mode << 6) | 0b00_111_111;
     }
 
-    pub fn r_m(&self) -> u8 {
+    pub fn reg(&self) -> u8 {
+        (self.0 & 0b00_111_000) >> 3
+    }
+
+    /// reg is 3 bits.
+    pub fn set_reg(&mut self, reg: u8) {
+        assert!(reg <= 0b111);
+        self.0 &= (reg << 3) | 0b11_000_111;
+    }
+
+    pub fn rm(&self) -> u8 {
         self.0 & 0b00000111
+    }
+
+    /// rm is 3 bits.
+    pub fn set_rm(&mut self, rm: u8) {
+        assert!(rm <= 0b111);
+        self.0 &= rm | 0b11_111_000;
     }
 }
 
