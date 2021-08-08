@@ -75,18 +75,7 @@ impl Reg64 {
     }
 
     pub fn mode(&self) -> u8 {
-        use Reg64::*;
-
-        match self {
-            RAX | R8 => 0b000,
-            RCX | R9 => 0b001,
-            RDX | R10 => 0b010,
-            RBX | R11 => 0b011,
-            RSP | R12 => 0b100,
-            RBP | R13 => 0b101,
-            RSI | R14 => 0b110,
-            RDI | R15 => 0b111,
-        }
+        0b11
     }
 
     pub fn reg(&self) -> u8 {

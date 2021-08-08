@@ -21,7 +21,7 @@ impl Mem64 {
         match self {
             Mem64::RegOffset(_, 0) => 0b00,
             Mem64::RegOffset(_, 1..=256) => 0b01,
-            Mem64::RegOffset(_, _) => 0b11,
+            Mem64::RegOffset(_, _) => 0b10,
             Mem64::RipOffset(_) => 0b00,
             Mem64::Sib { base: None, .. } => 0b00,
             Mem64::Sib {
@@ -35,7 +35,7 @@ impl Mem64 {
             } => 0b11,
             Mem64::Sib { disp: 0, .. } => 0b00,
             Mem64::Sib { disp: 1..=256, .. } => 0b01,
-            Mem64::Sib { .. } => 0b11,
+            Mem64::Sib { .. } => 0b10,
         }
     }
 
@@ -44,6 +44,18 @@ impl Mem64 {
             Mem64::RegOffset(reg, _) => reg.rm(),
             Mem64::RipOffset(_) => 0b101,
             Mem64::Sib { .. } => 0b100,
+        }
+    }
+
+    pub fn rex_x(&self) -> bool {
+        use Reg64::*;
+
+        match self {
+            Mem64::Sib {
+                index: R8 | R9 | R10 | R11 | R12 | R13 | R14 | R15,
+                ..
+            } => true,
+            _ => false,
         }
     }
 
