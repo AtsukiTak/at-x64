@@ -157,7 +157,7 @@ impl ModRM {
     /// mode is 2 bits.
     pub fn set_mode(&mut self, mode: u8) {
         assert!(mode <= 0b11);
-        self.0 &= (mode << 6) | 0b00_111_111;
+        self.0 = (self.0 & 0b00_111_111) + (mode << 6);
     }
 
     pub fn reg(&self) -> u8 {
@@ -167,7 +167,7 @@ impl ModRM {
     /// reg is 3 bits.
     pub fn set_reg(&mut self, reg: u8) {
         assert!(reg <= 0b111);
-        self.0 &= (reg << 3) | 0b11_000_111;
+        self.0 = (self.0 & 0b11_000_111) + (reg << 3);
     }
 
     pub fn rm(&self) -> u8 {
@@ -177,7 +177,7 @@ impl ModRM {
     /// rm is 3 bits.
     pub fn set_rm(&mut self, rm: u8) {
         assert!(rm <= 0b111);
-        self.0 &= rm | 0b11_111_000;
+        self.0 = (self.0 & 0b11_111_000) + rm;
     }
 }
 
