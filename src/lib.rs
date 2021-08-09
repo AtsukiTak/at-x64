@@ -1,4 +1,4 @@
-mod bytecode;
+pub mod bytecode;
 mod flexbytes;
 pub mod instruction;
 pub mod mem;

@@ -34,6 +34,9 @@ impl Lea<Reg64, Mem64> {
         mod_rm.set_rm(src.rm());
         code.mod_rm = Some(mod_rm);
 
+        // SIB
+        code.sib = src.sib();
+
         // addr disp
         code.addr_disp = match src.disp() {
             None => FlexBytes::new(0),
@@ -55,14 +58,17 @@ mod test {
 
     #[test]
     fn test() {
+        use {Mem64::*, Reg64::*};
+
         let cases = [
+            (Lea::new(RAX, RegOffset(RDI, 0)), vec![0x48, 0x8D, 0x07]),
             (
-                Lea::new(Reg64::RAX, Mem64::RegOffset(Reg64::RDI, 0)),
-                vec![0x48, 0x8D, 0x07],
+                Lea::new(RAX, RegOffset(RDI, 42)),
+                vec![0x48, 0x8D, 0x47, 0x2A],
             ),
             (
-                Lea::new(Reg64::RAX, Mem64::RegOffset(Reg64::RDI, 42)),
-                vec![0x48, 0x8D, 0x47, 0x2A],
+                Lea::new(RAX, RegOffset(RSP, 0)),
+                vec![0x48, 0x8D, 0x04, 0x24],
             ),
         ];
 

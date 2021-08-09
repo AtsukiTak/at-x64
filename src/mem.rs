@@ -1,4 +1,4 @@
-use crate::reg::Reg64;
+use crate::{bytecode::Sib, reg::Reg64};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mem64 {
@@ -63,6 +63,29 @@ impl Mem64 {
             Mem64::RegOffset(reg, _) => reg.rm(),
             Mem64::RipOffset(_) => 0b101,
             Mem64::Sib { .. } => 0b100,
+        }
+    }
+
+    pub fn sib(&self) -> Option<Sib> {
+        use Reg64::*;
+
+        match self {
+            // scale=0, index=rsp, base=rsp/r12
+            Mem64::RegOffset(RSP | R12, _) => Some(Sib::new(0, 0b100, 0b100)),
+            Mem64::RegOffset(_, _) => None,
+            Mem64::RipOffset(_) => None,
+            Mem64::Sib {
+                base: None,
+                index,
+                scale,
+                ..
+            } => Some(Sib::new(*scale, index.reg(), 0b101)),
+            Mem64::Sib {
+                base: Some(base),
+                index,
+                scale,
+                ..
+            } => Some(Sib::new(*scale, index.reg(), base.reg())),
         }
     }
 

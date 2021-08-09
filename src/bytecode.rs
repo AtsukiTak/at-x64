@@ -189,7 +189,7 @@ impl Sib {
         assert!(index <= 0b111);
         assert!(base <= 0b111);
 
-        Sib(scale << 6 & index << 3 & base)
+        Sib(scale << 6 | index << 3 | base)
     }
 
     pub fn from_raw(raw: u8) -> Self {
