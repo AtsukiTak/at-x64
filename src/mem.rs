@@ -1,4 +1,4 @@
-use crate::{bytecode::Sib, reg::Reg64};
+use crate::{bytecode::Sib, reg::Reg64, FlexBytes};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mem64 {
@@ -23,12 +23,6 @@ pub enum Mem64 {
         index: Reg64,
         scale: u8, // 1 ~ 4,
     },
-}
-
-/// address displacement
-pub enum Disp {
-    U8(u8),
-    U32(u32),
 }
 
 impl Mem64 {
@@ -89,29 +83,29 @@ impl Mem64 {
         }
     }
 
-    pub fn disp(&self) -> Option<Disp> {
+    pub fn disp(&self) -> FlexBytes<4> {
         use {Mem64::*, Reg64::*};
 
         match self {
-            RegOffset(RBP | R13, 0) => Some(Disp::U8(0)),
-            RegOffset(_, 0) => None,
-            RegOffset(_, disp @ 1..=256) => Some(Disp::U8(*disp as u8)),
-            RegOffset(_, disp) => Some(Disp::U32(*disp)),
-            RipOffset(disp) => Some(Disp::U32(*disp)),
+            RegOffset(RBP | R13, 0) => FlexBytes::from(0 as u8),
+            RegOffset(_, 0) => FlexBytes::new(0),
+            RegOffset(_, disp @ 1..=256) => FlexBytes::from(*disp as u8),
+            RegOffset(_, disp) => FlexBytes::from(*disp),
+            RipOffset(disp) => FlexBytes::from(*disp),
             Sib {
                 base: None, disp, ..
-            } => Some(Disp::U32(*disp)),
+            } => FlexBytes::from(*disp),
             Sib {
                 base: Some(RBP | R13),
                 disp: 0,
                 ..
-            } => Some(Disp::U8(0)),
-            Sib { disp: 0, .. } => None,
+            } => FlexBytes::from(0u8),
+            Sib { disp: 0, .. } => FlexBytes::new(0),
             Sib {
                 disp: disp @ 1..=256,
                 ..
-            } => Some(Disp::U8(*disp as u8)),
-            Sib { disp, .. } => Some(Disp::U32(*disp)),
+            } => FlexBytes::from(*disp as u8),
+            Sib { disp, .. } => FlexBytes::from(*disp),
         }
     }
 

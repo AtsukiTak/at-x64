@@ -1,8 +1,4 @@
-use crate::{
-    mem::{Disp, Mem64},
-    ByteCode, FlexBytes, ModRM, Reg64, Rex,
-};
-use byteorder::{WriteBytesExt as _, LE};
+use crate::{ByteCode, FlexBytes, Mem64, ModRM, Reg64, Rex};
 
 pub struct Lea<Dst, Src>(Dst, Src);
 
@@ -38,15 +34,7 @@ impl Lea<Reg64, Mem64> {
         code.sib = src.sib();
 
         // addr disp
-        code.addr_disp = match src.disp() {
-            None => FlexBytes::new(0),
-            Some(Disp::U8(disp)) => FlexBytes::from([disp]),
-            Some(Disp::U32(disp)) => {
-                let mut bytes = FlexBytes::new(4);
-                bytes.bytes_mut().write_u32::<LE>(disp).unwrap();
-                bytes
-            }
-        };
+        code.addr_disp = src.disp();
 
         code
     }
