@@ -67,8 +67,40 @@ mod test {
                 vec![0x48, 0x8D, 0x47, 0x2A],
             ),
             (
+                Lea::new(RSP, RegOffset(RSP, 0)),
+                vec![0x48, 0x8D, 0x24, 0x24],
+            ),
+            (
                 Lea::new(RAX, RegOffset(RSP, 0)),
                 vec![0x48, 0x8D, 0x04, 0x24],
+            ),
+            (
+                Lea::new(RDI, RipOffset(42)),
+                vec![0x48, 0x8D, 0x3D, 0x2A, 0x00, 0x00, 0x00],
+            ),
+            (
+                Lea::new(
+                    RDI,
+                    Sib {
+                        base: Some(RAX),
+                        index: RDI,
+                        scale: 1,
+                        disp: 0,
+                    },
+                ),
+                vec![0x48, 0x8D, 0x3c, 0x78],
+            ),
+            (
+                Lea::new(
+                    RDI,
+                    Sib {
+                        base: None,
+                        index: RDI,
+                        scale: 1,
+                        disp: 0,
+                    },
+                ),
+                vec![0x48, 0x8D, 0x3c, 0x7d, 0x00, 0x00, 0x00, 0x00],
             ),
         ];
 
