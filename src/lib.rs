@@ -1,7 +1,7 @@
 mod bytecode;
 mod flexbytes;
 pub mod instruction;
-mod mem;
+pub mod mem;
 mod reg;
 
 pub use bytecode::{ByteCode, ModRM, Rex, Sib};

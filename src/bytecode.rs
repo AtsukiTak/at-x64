@@ -3,13 +3,13 @@ use byteorder::WriteBytesExt as _;
 use std::io::{Cursor, Write as _};
 
 pub struct ByteCode {
-    pub prefix: Option<u8>,    // 0 ~ 1 byte
-    pub rex: Option<Rex>,      // 0 ~ 1 byte
-    pub opcode: FlexBytes<3>,  // 1 ~ 3 byte
-    pub mod_rm: Option<ModRM>, // 0 ~ 1 byte
-    pub sib: Option<Sib>,      // 0 ~ 1 byte
-    pub addr: FlexBytes<4>,    // 0 ~ 4 byte
-    pub imm: FlexBytes<4>,     // 0 ~ 4 byte
+    pub prefix: Option<u8>,      // 0 ~ 1 byte
+    pub rex: Option<Rex>,        // 0 ~ 1 byte
+    pub opcode: FlexBytes<3>,    // 1 ~ 3 byte
+    pub mod_rm: Option<ModRM>,   // 0 ~ 1 byte
+    pub sib: Option<Sib>,        // 0 ~ 1 byte
+    pub addr_disp: FlexBytes<4>, // 0 ~ 4 byte
+    pub imm: FlexBytes<4>,       // 0 ~ 4 byte
 }
 
 impl ByteCode {
@@ -20,7 +20,7 @@ impl ByteCode {
             opcode: FlexBytes::new(1),
             mod_rm: None,
             sib: None,
-            addr: FlexBytes::new(0),
+            addr_disp: FlexBytes::new(0),
             imm: FlexBytes::new(0),
         }
     }
@@ -31,7 +31,7 @@ impl ByteCode {
             + self.opcode.len()
             + self.mod_rm.is_some() as usize
             + self.sib.is_some() as usize
-            + self.addr.len()
+            + self.addr_disp.len()
             + self.imm.len();
 
         let mut bytes = FlexBytes::new(len);
@@ -56,7 +56,7 @@ impl ByteCode {
             cursor.write_u8(sib.byte()).unwrap();
         }
 
-        cursor.write_all(self.addr.bytes()).unwrap();
+        cursor.write_all(self.addr_disp.bytes()).unwrap();
 
         cursor.write_all(self.imm.bytes()).unwrap();
 
