@@ -21,7 +21,7 @@ pub enum Mem64 {
         base: Option<Reg64>,
         disp: u32,
         index: Reg64,
-        scale: u8, // 1 ~ 4,
+        scale: u8, // 0 ~ 3,
     },
 }
 

@@ -59,3 +59,13 @@ impl<const MAX: usize> From<u32> for FlexBytes<MAX> {
         bytes
     }
 }
+
+impl<const MAX: usize> From<u64> for FlexBytes<MAX> {
+    fn from(n: u64) -> Self {
+        assert!(MAX >= 4);
+
+        let mut bytes = FlexBytes::new(4);
+        bytes.bytes_mut().write_u64::<LE>(n).unwrap();
+        bytes
+    }
+}
