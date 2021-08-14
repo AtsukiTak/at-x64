@@ -11,9 +11,9 @@ impl Mov<Mem64, Reg64> {
         // REX prefix
         let mut rex = Rex::new();
         rex.set_w(true);
-        rex.set_r(src.rex_r());
-        rex.set_x(dst.rex_x());
-        rex.set_b(dst.rex_b());
+        rex.set_r(src.rex_r_bit());
+        rex.set_x(dst.rex_x_bit());
+        rex.set_b(dst.rex_b_bit());
         code.rex = Some(rex);
 
         // opcode
@@ -21,16 +21,16 @@ impl Mov<Mem64, Reg64> {
 
         // ModR/M
         let mut mod_rm = ModRM::new();
-        mod_rm.set_mode(dst.mode());
-        mod_rm.set_reg(src.reg());
-        mod_rm.set_rm(dst.rm());
+        mod_rm.set_mode(dst.mode_bits());
+        mod_rm.set_reg(src.reg_bits());
+        mod_rm.set_rm(dst.rm_bits());
         code.mod_rm = Some(mod_rm);
 
         // SIB
-        code.sib = dst.sib();
+        code.sib = dst.sib_byte();
 
         // addr disp
-        code.addr_disp = dst.disp();
+        code.addr_disp = dst.disp_bytes();
 
         code
     }
@@ -45,9 +45,9 @@ impl Mov<Reg64, Reg64> {
         // set REX prefix
         let mut rex = Rex::new();
         rex.set_w(true);
-        rex.set_r(src.rex_r());
+        rex.set_r(src.rex_r_bit());
         rex.set_x(false);
-        rex.set_b(dst.rex_b());
+        rex.set_b(dst.rex_b_bit());
         code.rex = Some(rex);
 
         // set opcode
@@ -55,9 +55,9 @@ impl Mov<Reg64, Reg64> {
 
         // set ModR/M
         let mut mod_rm = ModRM::new();
-        mod_rm.set_mode(dst.mode());
-        mod_rm.set_reg(src.reg());
-        mod_rm.set_rm(dst.rm());
+        mod_rm.set_mode(dst.mode_bits());
+        mod_rm.set_reg(src.reg_bits());
+        mod_rm.set_rm(dst.rm_bits());
         code.mod_rm = Some(mod_rm);
 
         code
@@ -73,11 +73,11 @@ impl Mov<Reg64, u64> {
         // REX prefix
         let mut rex = Rex::new();
         rex.set_w(true);
-        rex.set_b(dst.rex_b());
+        rex.set_b(dst.rex_b_bit());
         code.rex = Some(rex);
 
         // opcode
-        code.opcode = FlexBytes::from([0xB8 + dst.reg()]);
+        code.opcode = FlexBytes::from([0xB8 + dst.reg_bits()]);
 
         // immutable val
         code.imm = FlexBytes::from(src);
@@ -92,25 +92,20 @@ mod test {
 
     #[test]
     fn test_mov_mem64_reg64() {
-        use {Mem64::*, Reg64::*};
+        use Reg64::*;
 
         let cases = [
-            (Mov(RegOffset(RDI, 0), RAX), vec![0x48, 0x89, 0x07]),
-            (Mov(RegOffset(RDI, 42), RAX), vec![0x48, 0x89, 0x47, 0x2A]),
+            (Mov(Mem64::reg(RDI), RAX), vec![0x48, 0x89, 0x07]),
             (
-                Mov(RipOffset(42), RAX),
+                Mov(Mem64::reg_offset(RDI, 42), RAX),
+                vec![0x48, 0x89, 0x47, 0x2A],
+            ),
+            (
+                Mov(Mem64::rip_offset(42), RAX),
                 vec![0x48, 0x89, 0x05, 0x2A, 0x00, 0x00, 0x00],
             ),
             (
-                Mov(
-                    Sib {
-                        base: Some(RBP),
-                        disp: 42,
-                        index: RAX,
-                        scale: 3,
-                    },
-                    R13,
-                ),
+                Mov(Mem64::sib(Some(RBP), 42, RAX, 3), R13),
                 vec![0x4C, 0x89, 0x6C, 0xC5, 0x2A],
             ),
         ];

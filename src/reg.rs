@@ -56,7 +56,7 @@ pub enum Reg64 {
 }
 
 impl Reg64 {
-    pub fn rex_r(&self) -> bool {
+    pub fn rex_r_bit(&self) -> bool {
         use Reg64::*;
 
         match self {
@@ -65,7 +65,7 @@ impl Reg64 {
         }
     }
 
-    pub fn rex_b(&self) -> bool {
+    pub fn rex_b_bit(&self) -> bool {
         use Reg64::*;
 
         match self {
@@ -74,11 +74,11 @@ impl Reg64 {
         }
     }
 
-    pub fn mode(&self) -> u8 {
+    pub fn mode_bits(&self) -> u8 {
         0b11
     }
 
-    pub fn reg(&self) -> u8 {
+    pub fn reg_bits(&self) -> u8 {
         use Reg64::*;
 
         match self {
@@ -93,7 +93,7 @@ impl Reg64 {
         }
     }
 
-    pub fn rm(&self) -> u8 {
+    pub fn rm_bits(&self) -> u8 {
         use Reg64::*;
 
         match self {

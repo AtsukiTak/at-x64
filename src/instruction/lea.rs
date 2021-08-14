@@ -15,9 +15,9 @@ impl Lea<Reg64, Mem64> {
         // REX prefix
         let mut rex = Rex::new();
         rex.set_w(true);
-        rex.set_r(dst.rex_r());
-        rex.set_x(src.rex_x());
-        rex.set_b(src.rex_b());
+        rex.set_r(dst.rex_r_bit());
+        rex.set_x(src.rex_x_bit());
+        rex.set_b(src.rex_b_bit());
         code.rex = Some(rex);
 
         // opcode
@@ -25,16 +25,16 @@ impl Lea<Reg64, Mem64> {
 
         // ModR/M
         let mut mod_rm = ModRM::new();
-        mod_rm.set_mode(src.mode());
-        mod_rm.set_reg(dst.reg());
-        mod_rm.set_rm(src.rm());
+        mod_rm.set_mode(src.mode_bits());
+        mod_rm.set_reg(dst.reg_bits());
+        mod_rm.set_rm(src.rm_bits());
         code.mod_rm = Some(mod_rm);
 
         // SIB
-        code.sib = src.sib();
+        code.sib = src.sib_byte();
 
         // addr disp
-        code.addr_disp = src.disp();
+        code.addr_disp = src.disp_bytes();
 
         code
     }
@@ -46,48 +46,26 @@ mod test {
 
     #[test]
     fn test() {
-        use {Mem64::*, Reg64::*};
+        use Reg64::*;
 
         let cases = [
-            (Lea::new(RAX, RegOffset(RDI, 0)), vec![0x48, 0x8D, 0x07]),
+            (Lea::new(RAX, Mem64::reg(RDI)), vec![0x48, 0x8D, 0x07]),
             (
-                Lea::new(RAX, RegOffset(RDI, 42)),
+                Lea::new(RAX, Mem64::reg_offset(RDI, 42)),
                 vec![0x48, 0x8D, 0x47, 0x2A],
             ),
+            (Lea::new(RSP, Mem64::reg(RSP)), vec![0x48, 0x8D, 0x24, 0x24]),
+            (Lea::new(RAX, Mem64::reg(RSP)), vec![0x48, 0x8D, 0x04, 0x24]),
             (
-                Lea::new(RSP, RegOffset(RSP, 0)),
-                vec![0x48, 0x8D, 0x24, 0x24],
-            ),
-            (
-                Lea::new(RAX, RegOffset(RSP, 0)),
-                vec![0x48, 0x8D, 0x04, 0x24],
-            ),
-            (
-                Lea::new(RDI, RipOffset(42)),
+                Lea::new(RDI, Mem64::rip_offset(42)),
                 vec![0x48, 0x8D, 0x3D, 0x2A, 0x00, 0x00, 0x00],
             ),
             (
-                Lea::new(
-                    RDI,
-                    Sib {
-                        base: Some(RAX),
-                        index: RDI,
-                        scale: 1,
-                        disp: 0,
-                    },
-                ),
+                Lea::new(RDI, Mem64::sib(Some(RAX), 0, RDI, 1)),
                 vec![0x48, 0x8D, 0x3c, 0x78],
             ),
             (
-                Lea::new(
-                    RDI,
-                    Sib {
-                        base: None,
-                        index: RDI,
-                        scale: 1,
-                        disp: 0,
-                    },
-                ),
+                Lea::new(RDI, Mem64::sib(None, 0, RDI, 1)),
                 vec![0x48, 0x8D, 0x3c, 0x7d, 0x00, 0x00, 0x00, 0x00],
             ),
         ];

@@ -26,8 +26,30 @@ pub enum Mem64 {
 }
 
 impl Mem64 {
+    pub fn reg(reg: Reg64) -> Self {
+        Mem64::RegOffset(reg, 0)
+    }
+
+    pub fn reg_offset(reg: Reg64, offset: u32) -> Self {
+        Mem64::RegOffset(reg, offset)
+    }
+
+    pub fn rip_offset(offset: u32) -> Self {
+        Mem64::RipOffset(offset)
+    }
+
+    pub fn sib(base: Option<Reg64>, disp: u32, index: Reg64, scale: u8) -> Self {
+        assert!(scale <= 3);
+        Mem64::Sib {
+            base,
+            disp,
+            index,
+            scale,
+        }
+    }
+
     /// ModR/M operand の mode フィールドの値
-    pub fn mode(&self) -> u8 {
+    pub fn mode_bits(&self) -> u8 {
         use {Mem64::*, Reg64::*};
 
         match self {
@@ -52,15 +74,15 @@ impl Mem64 {
         }
     }
 
-    pub fn rm(&self) -> u8 {
+    pub fn rm_bits(&self) -> u8 {
         match self {
-            Mem64::RegOffset(reg, _) => reg.rm(),
+            Mem64::RegOffset(reg, _) => reg.rm_bits(),
             Mem64::RipOffset(_) => 0b101,
             Mem64::Sib { .. } => 0b100,
         }
     }
 
-    pub fn sib(&self) -> Option<Sib> {
+    pub fn sib_byte(&self) -> Option<Sib> {
         use Reg64::*;
 
         match self {
@@ -73,17 +95,17 @@ impl Mem64 {
                 index,
                 scale,
                 ..
-            } => Some(Sib::new(*scale, index.reg(), 0b101)),
+            } => Some(Sib::new(*scale, index.reg_bits(), 0b101)),
             Mem64::Sib {
                 base: Some(base),
                 index,
                 scale,
                 ..
-            } => Some(Sib::new(*scale, index.reg(), base.reg())),
+            } => Some(Sib::new(*scale, index.reg_bits(), base.reg_bits())),
         }
     }
 
-    pub fn disp(&self) -> FlexBytes<4> {
+    pub fn disp_bytes(&self) -> FlexBytes<4> {
         use {Mem64::*, Reg64::*};
 
         match self {
@@ -109,7 +131,7 @@ impl Mem64 {
         }
     }
 
-    pub fn rex_x(&self) -> bool {
+    pub fn rex_x_bit(&self) -> bool {
         use Reg64::*;
 
         match self {
@@ -121,13 +143,13 @@ impl Mem64 {
         }
     }
 
-    pub fn rex_b(&self) -> bool {
+    pub fn rex_b_bit(&self) -> bool {
         match self {
-            Mem64::RegOffset(reg, _) => reg.rex_b(),
+            Mem64::RegOffset(reg, _) => reg.rex_b_bit(),
             Mem64::RipOffset(_) => false,
             Mem64::Sib {
                 base: Some(base), ..
-            } => base.rex_b(),
+            } => base.rex_b_bit(),
             Mem64::Sib { base: None, .. } => false,
         }
     }
