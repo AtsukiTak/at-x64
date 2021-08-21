@@ -1,15 +1,15 @@
-use crate::FlexBytes;
+use crate::BytesAtMost;
 use byteorder::WriteBytesExt as _;
 use std::io::{Cursor, Write as _};
 
 pub struct ByteCode {
-    pub prefix: Option<u8>,      // 0 ~ 1 byte
-    pub rex: Option<Rex>,        // 0 ~ 1 byte
-    pub opcode: FlexBytes<3>,    // 1 ~ 3 byte
-    pub mod_rm: Option<ModRM>,   // 0 ~ 1 byte
-    pub sib: Option<Sib>,        // 0 ~ 1 byte
-    pub addr_disp: FlexBytes<4>, // 0 ~ 4 byte
-    pub imm: FlexBytes<4>,       // 0 ~ 4 byte
+    pub prefix: Option<u8>,        // 0 ~ 1 byte
+    pub rex: Option<Rex>,          // 0 ~ 1 byte
+    pub opcode: BytesAtMost<3>,    // 1 ~ 3 byte
+    pub mod_rm: Option<ModRM>,     // 0 ~ 1 byte
+    pub sib: Option<Sib>,          // 0 ~ 1 byte
+    pub addr_disp: BytesAtMost<4>, // 0 ~ 4 byte
+    pub imm: BytesAtMost<4>,       // 0 ~ 4 byte
 }
 
 impl ByteCode {
@@ -17,15 +17,15 @@ impl ByteCode {
         ByteCode {
             prefix: None,
             rex: None,
-            opcode: FlexBytes::new(1),
+            opcode: BytesAtMost::new(1),
             mod_rm: None,
             sib: None,
-            addr_disp: FlexBytes::new(0),
-            imm: FlexBytes::new(0),
+            addr_disp: BytesAtMost::new(0),
+            imm: BytesAtMost::new(0),
         }
     }
 
-    pub fn to_bytes(&self) -> FlexBytes<15> {
+    pub fn to_bytes(&self) -> BytesAtMost<15> {
         let len = self.prefix.is_some() as usize
             + self.rex.is_some() as usize
             + self.opcode.len()
@@ -34,7 +34,7 @@ impl ByteCode {
             + self.addr_disp.len()
             + self.imm.len();
 
-        let mut bytes = FlexBytes::new(len);
+        let mut bytes = BytesAtMost::new(len);
 
         let mut cursor = Cursor::new(bytes.bytes_mut());
 

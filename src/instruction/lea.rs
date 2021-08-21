@@ -1,4 +1,4 @@
-use crate::{ByteCode, FlexBytes, Mem64, ModRM, Reg64, Rex};
+use crate::{ByteCode, BytesAtMost, Mem64, ModRM, Reg64, Rex};
 
 pub struct Lea<Dst, Src>(Dst, Src);
 
@@ -21,7 +21,7 @@ impl Lea<Reg64, Mem64> {
         code.rex = Some(rex);
 
         // opcode
-        code.opcode = FlexBytes::from([0x8D]);
+        code.opcode = BytesAtMost::from([0x8D]);
 
         // ModR/M
         let mut mod_rm = ModRM::new();

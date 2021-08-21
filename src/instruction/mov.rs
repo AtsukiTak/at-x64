@@ -1,4 +1,4 @@
-use crate::{ByteCode, FlexBytes, Mem64, ModRM, Reg64, Rex};
+use crate::{ByteCode, BytesAtMost, Mem64, ModRM, Reg64, Rex};
 
 pub struct Mov<Dst, Src>(pub Dst, pub Src);
 
@@ -17,7 +17,7 @@ impl Mov<Mem64, Reg64> {
         code.rex = Some(rex);
 
         // opcode
-        code.opcode = FlexBytes::from([0x89]);
+        code.opcode = BytesAtMost::from([0x89]);
 
         // ModR/M
         let mut mod_rm = ModRM::new();
@@ -51,7 +51,7 @@ impl Mov<Reg64, Reg64> {
         code.rex = Some(rex);
 
         // set opcode
-        code.opcode = FlexBytes::from([0x89]);
+        code.opcode = BytesAtMost::from([0x89]);
 
         // set ModR/M
         let mut mod_rm = ModRM::new();
@@ -77,10 +77,10 @@ impl Mov<Reg64, u64> {
         code.rex = Some(rex);
 
         // opcode
-        code.opcode = FlexBytes::from([0xB8 + dst.reg_bits()]);
+        code.opcode = BytesAtMost::from([0xB8 + dst.reg_bits()]);
 
         // immutable val
-        code.imm = FlexBytes::from(src);
+        code.imm = BytesAtMost::from(src);
 
         code
     }

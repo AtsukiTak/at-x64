@@ -1,4 +1,4 @@
-use crate::{bytecode::Sib, reg::Reg64, FlexBytes};
+use crate::{bytecode::Sib, reg::Reg64, BytesAtMost};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mem64 {
@@ -105,29 +105,29 @@ impl Mem64 {
         }
     }
 
-    pub fn disp_bytes(&self) -> FlexBytes<4> {
+    pub fn disp_bytes(&self) -> BytesAtMost<4> {
         use {Mem64::*, Reg64::*};
 
         match self {
-            RegOffset(RBP | R13, 0) => FlexBytes::from(0 as u8),
-            RegOffset(_, 0) => FlexBytes::new(0),
-            RegOffset(_, disp @ 1..=256) => FlexBytes::from(*disp as u8),
-            RegOffset(_, disp) => FlexBytes::from(*disp),
-            RipOffset(disp) => FlexBytes::from(*disp),
+            RegOffset(RBP | R13, 0) => BytesAtMost::from(0 as u8),
+            RegOffset(_, 0) => BytesAtMost::new(0),
+            RegOffset(_, disp @ 1..=256) => BytesAtMost::from(*disp as u8),
+            RegOffset(_, disp) => BytesAtMost::from(*disp),
+            RipOffset(disp) => BytesAtMost::from(*disp),
             Sib {
                 base: None, disp, ..
-            } => FlexBytes::from(*disp),
+            } => BytesAtMost::from(*disp),
             Sib {
                 base: Some(RBP | R13),
                 disp: 0,
                 ..
-            } => FlexBytes::from(0u8),
-            Sib { disp: 0, .. } => FlexBytes::new(0),
+            } => BytesAtMost::from(0u8),
+            Sib { disp: 0, .. } => BytesAtMost::new(0),
             Sib {
                 disp: disp @ 1..=256,
                 ..
-            } => FlexBytes::from(*disp as u8),
-            Sib { disp, .. } => FlexBytes::from(*disp),
+            } => BytesAtMost::from(*disp as u8),
+            Sib { disp, .. } => BytesAtMost::from(*disp),
         }
     }
 

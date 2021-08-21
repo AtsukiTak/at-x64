@@ -1,15 +1,15 @@
 use byteorder::{WriteBytesExt as _, LE};
 
-pub struct FlexBytes<const MAX: usize> {
+pub struct BytesAtMost<const MAX: usize> {
     bytes: [u8; MAX],
     len: usize,
 }
 
-impl<const MAX: usize> FlexBytes<MAX> {
+impl<const MAX: usize> BytesAtMost<MAX> {
     pub fn new(len: usize) -> Self {
         assert!(len <= MAX);
 
-        FlexBytes {
+        BytesAtMost {
             bytes: [0; MAX],
             len,
         }
@@ -32,39 +32,39 @@ impl<const MAX: usize> FlexBytes<MAX> {
     }
 }
 
-impl<const N: usize, const MAX: usize> From<[u8; N]> for FlexBytes<MAX> {
+impl<const N: usize, const MAX: usize> From<[u8; N]> for BytesAtMost<MAX> {
     fn from(array: [u8; N]) -> Self {
         assert!(N <= MAX);
 
-        let mut bytes = FlexBytes::new(N);
+        let mut bytes = BytesAtMost::new(N);
         bytes.bytes_mut().copy_from_slice(&array[..]);
         bytes
     }
 }
 
-impl<const MAX: usize> From<u8> for FlexBytes<MAX> {
+impl<const MAX: usize> From<u8> for BytesAtMost<MAX> {
     fn from(n: u8) -> Self {
         assert!(MAX >= 1);
 
-        FlexBytes::from([n])
+        BytesAtMost::from([n])
     }
 }
 
-impl<const MAX: usize> From<u32> for FlexBytes<MAX> {
+impl<const MAX: usize> From<u32> for BytesAtMost<MAX> {
     fn from(n: u32) -> Self {
         assert!(MAX >= 4);
 
-        let mut bytes = FlexBytes::new(4);
+        let mut bytes = BytesAtMost::new(4);
         bytes.bytes_mut().write_u32::<LE>(n).unwrap();
         bytes
     }
 }
 
-impl<const MAX: usize> From<u64> for FlexBytes<MAX> {
+impl<const MAX: usize> From<u64> for BytesAtMost<MAX> {
     fn from(n: u64) -> Self {
         assert!(MAX >= 4);
 
-        let mut bytes = FlexBytes::new(4);
+        let mut bytes = BytesAtMost::new(4);
         bytes.bytes_mut().write_u64::<LE>(n).unwrap();
         bytes
     }
